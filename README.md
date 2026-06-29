@@ -72,7 +72,7 @@ cd viralforge
 
 ## 👩‍💻 Author
 
-Developed by **Apoorva R Karoshi**  
+Developed by **Apoorva Karoshi**  
  
 GitHub: [@apoorvakaroshi](https://github.com/apoorvakaroshi)
 
