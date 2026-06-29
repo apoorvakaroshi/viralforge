@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ViralForge – Make the Internet Stop</title>
+  <meta name="description" content="Create, share, and vote on viral digital marketing campaigns. The best ideas rise to the top."/>
+  <meta property="og:title" content="ViralForge – Make the Internet Stop"/>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ViralForge">
+  
+  <meta property="og:image" content="https://via.placeholder.com/1200x630/6366f1/ffffff?text=ViralForge"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <!-- Particle Canvas -->
+  <canvas id="particleCanvas"></canvas>
+
+  <!-- Cursor -->
+  <div class="custom-cursor" id="cursor"></div>
+  <div class="cursor-trail" id="cursorTrail"></div>
+
+  <!-- Loading Screen -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader-content">
+      <div class="loader-logo">
+        <span class="loader-icon">⚡</span>
+        <span class="loader-text">ViralForge</span>
+      </div>
+      <div class="loader-bar">
+        <div class="loader-progress" id="loaderProgress"></div>
+      </div>
+      <p class="loader-tagline" id="loaderTagline">Charging the attention engine...</p>
+      <p style="font-size:0.7rem;color:rgba(255,255,255,0.3);margin-top:8px">Built by Apoorva Karoshi</p>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Main App -->
+  <div id="app" class="app hidden">
+
+    <!-- ═══════════════════════════════════ NAVBAR ═══════════════════════════════════ -->
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <div class="nav-brand" onclick="showSection('home')">
+          <span class="brand-icon">⚡</span>
+          <span class="brand-name">ViralForge</span>
+          <span class="brand-badge">BETA</span>
+        </div>
+
+        <div class="nav-links" id="navLinks">
+          <a class="nav-link active" onclick="showSection('home')" data-section="home">
+            <i class="fas fa-home"></i> Home
+          </a>
+          <a class="nav-link" onclick="showSection('campaigns')" data-section="campaigns">
+            <i class="fas fa-fire"></i> Campaigns
+          </a>
+          <a class="nav-link" onclick="showSection('leaderboard')" data-section="leaderboard">
+            <i class="fas fa-trophy"></i> Leaderboard
+          </a>
+          <a class="nav-link" onclick="showSection('analytics')" data-section="analytics">
+            <i class="fas fa-chart-line"></i> Analytics
+          </a>
+          <a class="nav-link" onclick="showSection('create')" data-section="create">
+            <i class="fas fa-plus-circle"></i> Create
+          </a>
+          <a class="nav-link" onclick="showSection('battle')" data-section="battle">
+            <i class="fas fa-bolt"></i> Battle <span class="nav-badge">NEW</span>
+          </a>
+          <a class="nav-link" onclick="showSection('simulator')" data-section="simulator">
+            <i class="fas fa-mobile-alt"></i> Simulator <span class="nav-badge">NEW</span>
+          </a>
+          <a class="nav-link" onclick="showSection('insights')" data-section="insights">
+            <i class="fas fa-brain"></i> Insights <span class="nav-badge">AI</span>
+          </a>
+        </div>
+
+        <div class="nav-actions">
+          <div class="live-counter">
+            <span class="live-dot"></span>
+            <span id="liveCount">0</span> Live
+          </div>
+          <button class="kbd-hint-btn" onclick="showKeyboardHelp()" title="Keyboard shortcuts">
+            <i class="fas fa-keyboard"></i>
+          </button>
+          <button class="btn-nav-cta" onclick="showSection('create')">
+            <i class="fas fa-bolt"></i> Launch Campaign
+          </button>
+          <div class="nav-avatar" id="navAvatar" onclick="toggleUserMenu()">
+            <span id="avatarLetter">?</span>
+          </div>
+          <button class="hamburger" id="hamburger" onclick="toggleMobileMenu()">
+            <span></span><span></span><span></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- User Dropdown -->
+      <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-header">
+          <div class="dropdown-avatar" id="dropAvatar">?</div>
+          <div>
+            <div class="dropdown-name" id="dropName">Guest User</div>
+            <div class="dropdown-email" id="dropEmail">Sign in to continue</div>
+          </div>
+        </div>
+        <hr class="dropdown-divider"/>
+        <a class="dropdown-item" onclick="showSection('profile')"><i class="fas fa-user"></i> My Profile</a>
+        <a class="dropdown-item" onclick="showSection('myCampaigns')"><i class="fas fa-layer-group"></i> My Campaigns</a>
+        <a class="dropdown-item" onclick="toggleTheme()"><i class="fas fa-moon" id="themeIcon"></i> Dark Mode</a>
+        <hr class="dropdown-divider"/>
+        <a class="dropdown-item danger" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </nav>
+
+    <!-- ═══════════════════════════════════ HOME SECTION ═══════════════════════════════════ -->
+    <section id="homeSection" class="section active">
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-bg-text">VIRAL</div>
+        <div class="hero-content">
+          <div class="hero-badge animate-in">
+            <span class="badge-dot"></span>
+            LIVE PUBLIC SCOREBOARD
+          </div>
+          <h1 class="hero-title animate-in">
+            Make the Internet
+            <span class="gradient-text typed-container">
+              <span id="typedText"></span><span class="cursor-blink">|</span>
+            </span>
+          </h1>
+          <p class="hero-subtitle animate-in">
+            Create one viral digital marketing idea. Put it in front of the world.
+            If it's good — people stop, react, and share. <strong>Votes decide everything.</strong>
+          </p>
+          <div class="hero-actions animate-in">
+            <button class="btn-primary btn-xl glow-btn" onclick="showSection('create')">
+              <i class="fas fa-rocket"></i> Launch Your Campaign
+            </button>
+            <button class="btn-secondary btn-xl" onclick="showSection('campaigns')">
+              <i class="fas fa-fire"></i> See What's Trending
+            </button>
+          </div>
+          <div class="hero-countdown animate-in">
+            <div class="cd-label-top">⏳ Scoreboard closes in</div>
+            <div id="countdownTimer" class="countdown-timer"></div>
+          </div>
+          <div class="hero-stats animate-in">
+            <div class="hero-stat">
+              <span class="stat-number" data-target="2847">0</span>
+              <span class="stat-label">Campaigns Created</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="hero-stat">
+              <span class="stat-number" data-target="142593">0</span>
+              <span class="stat-label">Total Votes Cast</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="hero-stat">
+              <span class="stat-number" data-target="38471">0</span>
+              <span class="stat-label">Creators Joined</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="hero-stat">
+              <span class="stat-number" data-target="50">0</span>
+              <span class="stat-label">Campaigns Live</span>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="phone-mockup">
+            <div class="phone-screen">
+              <div class="phone-campaign-card">
+                <div class="phone-card-img">🎯</div>
+                <div class="phone-card-title">Stop Scrolling</div>
+                <div class="phone-card-sub">This ad went viral</div>
+                <div class="phone-vote-bar">
+                  <div class="phone-vote-fill"></div>
+                </div>
+                <div class="phone-votes">🔥 9,421 votes</div>
+              </div>
+              <div class="floating-reactions">
+                <span class="float-emoji" style="--d:0s">🔥</span>
+                <span class="float-emoji" style="--d:0.5s">❤️</span>
+                <span class="float-emoji" style="--d:1s">🚀</span>
+                <span class="float-emoji" style="--d:1.5s">⚡</span>
+                <span class="float-emoji" style="--d:2s">💯</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- USER RANK BANNER -->
+      <div id="userRankBanner" style="display:none" class="user-rank-banner"></div>
+
+      <!-- HOW IT WORKS -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">How It Works</h2>
+          <p class="section-sub">Five steps from idea to the top of the scoreboard</p>
+        </div>
+        <div class="steps-grid">
+          <div class="step-card" data-step="1">
+            <div class="step-number">01</div>
+            <div class="step-icon">💡</div>
+            <h3>Create Your Idea</h3>
+            <p>Come up with one viral marketing concept — hook, meme, campaign, or video concept.</p>
+          </div>
+          <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+          <div class="step-card" data-step="2">
+            <div class="step-number">02</div>
+            <div class="step-icon">📤</div>
+            <h3>Post It</h3>
+            <p>Submit your campaign to ViralForge. Make it live for the world to see and judge.</p>
+          </div>
+          <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+          <div class="step-card" data-step="3">
+            <div class="step-number">03</div>
+            <div class="step-icon">📣</div>
+            <h3>Share It</h3>
+            <p>Think it's good? Put it in front of people. Share everywhere. Real attention only.</p>
+          </div>
+          <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+          <div class="step-card" data-step="4">
+            <div class="step-number">04</div>
+            <div class="step-icon">🗳️</div>
+            <h3>Get Votes</h3>
+            <p>If it connects — people stop, react, and vote. No tricks. Just creativity.</p>
+          </div>
+          <div class="step-connector"><i class="fas fa-arrow-right"></i></div>
+          <div class="step-card" data-step="5">
+            <div class="step-number">05</div>
+            <div class="step-icon">🏆</div>
+            <h3>Move Up. Stand Out.</h3>
+            <p>The strongest idea rises to the top. The results speak for you.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- CAMPAIGN OF THE DAY -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">🏅 Campaign of the Day</h2>
+          <span class="live-pill">FEATURED</span>
+        </div>
+        <div id="campaignOfDay"></div>
+      </div>
+
+      <!-- TRENDING CAMPAIGNS PREVIEW -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">🔥 Trending Right Now</h2>
+          <button class="btn-ghost" onclick="showSection('campaigns')">View All <i class="fas fa-arrow-right"></i></button>
+        </div>
+        <div class="trending-grid" id="homeTrending"></div>
+      </div>
+
+      <!-- HOT RIGHT NOW — LAST 60 MINUTES -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">⚡ Hot Right Now <span class="live-pill">LIVE</span></h2>
+          <p class="section-sub" style="font-size:0.82rem;color:var(--text3)">Ranked by votes gained in the last 60 minutes</p>
+        </div>
+        <div class="velocity-list" id="velocityList"></div>
+      </div>
+
+      <!-- BRING PEOPLE IN COUNTER -->
+      <div class="section-block bring-people-block">
+        <div class="bring-people-wrap">
+          <div class="bring-people-left">
+            <div class="bring-label">👥 People Brought In</div>
+            <div class="bring-count" id="bringPeopleCount">0</div>
+            <div class="bring-sub">Total attention pulled by campaigns on this platform</div>
+          </div>
+          <div class="bring-people-right">
+            <div class="bring-stat"><span id="bringVotes">0</span><div>Total Votes</div></div>
+            <div class="bring-stat"><span id="bringCampaigns">0</span><div>Campaigns</div></div>
+            <div class="bring-stat"><span id="bringShares">0</span><div>Shares</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAG WORD CLOUD -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">🏷️ Trending Topics</h2>
+          <p class="section-sub" style="font-size:0.82rem;color:var(--text3)">Click any tag to explore campaigns</p>
+        </div>
+        <div class="tag-cloud" id="tagCloud"></div>
+      </div>
+
+      <!-- CAMPAIGN TYPES -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">What Can You Create?</h2>
+          <p class="section-sub">Pick your format. Make it unforgettable.</p>
+        </div>
+        <div class="types-grid">
+          <div class="type-card" onclick="openCreateWithType('viral-hook')">
+            <div class="type-icon">🪝</div>
+            <h3>Viral Hook</h3>
+            <p>One line that stops the scroll. The perfect opening that demands attention.</p>
+            <span class="type-tag">Most Popular</span>
+          </div>
+          <div class="type-card" onclick="openCreateWithType('meme-ad')">
+            <div class="type-icon">😂</div>
+            <h3>Meme Ad</h3>
+            <p>Turn culture into marketing. Make them laugh, then make them buy.</p>
+            <span class="type-tag">High Engagement</span>
+          </div>
+          <div class="type-card" onclick="openCreateWithType('video-concept')">
+            <div class="type-icon">🎬</div>
+            <h3>Video Concept</h3>
+            <p>A script, storyboard or concept for a short-form viral video.</p>
+            <span class="type-tag">Trending</span>
+          </div>
+          <div class="type-card" onclick="openCreateWithType('campaign-concept')">
+            <div class="type-icon">🚀</div>
+            <h3>Bold Campaign</h3>
+            <p>A full campaign concept that shakes up an entire industry.</p>
+            <span class="type-tag">High Impact</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CREATOR SPOTLIGHT -->
+      <div class="section-block">
+        <div class="section-header">
+          <h2 class="section-title">🌟 Creator Spotlight</h2>
+          <p class="section-sub" style="font-size:0.82rem;color:var(--text3)">Top creators pulling real attention this week</p>
+        </div>
+        <div class="spotlight-grid" id="spotlightGrid"></div>
+      </div>
+
+      <!-- PRIZE SECTION -->
+      <div class="prize-section">
+        <div class="prize-bg"></div>
+        <div class="prize-content">
+          <div class="prize-badge">🚀 PUBLIC SCOREBOARD</div>
+          <h2 class="prize-amount" style="font-size:2.2rem">Can You Make People Care?</h2>
+          <p class="prize-desc">No ads. No tricks. No shortcuts.<br/>Just your creativity, your reach, and your ability to make people stop.</p>
+          <button class="btn-primary btn-xl glow-btn" onclick="showSection('create')">
+            <i class="fas fa-bolt"></i> Launch Your Idea
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ CAMPAIGNS SECTION ═══════════════════════════════════ -->
+    <section id="campaignsSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-fire"></i> All Campaigns</h1>
+        <p class="page-sub">Browse, vote, and discover the best digital marketing ideas</p>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="filter-bar">
+        <div class="filter-tabs">
+          <button class="filter-tab active" onclick="filterCampaigns('all', this)">All</button>
+          <button class="filter-tab" onclick="filterCampaigns('trending', this)">🔥 Trending</button>
+          <button class="filter-tab" onclick="filterCampaigns('new', this)">✨ New</button>
+          <button class="filter-tab" onclick="filterCampaigns('viral-hook', this)">🪝 Viral Hooks</button>
+          <button class="filter-tab" onclick="filterCampaigns('meme-ad', this)">😂 Meme Ads</button>
+          <button class="filter-tab" onclick="filterCampaigns('video-concept', this)">🎬 Video</button>
+          <button class="filter-tab" onclick="filterCampaigns('campaign-concept', this)">🚀 Campaigns</button>
+        </div>
+        <div class="filter-actions">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search campaigns..." oninput="searchCampaignsDebounced(this.value)"/>
+          </div>
+          <div class="sort-select">
+            <select onchange="sortCampaigns(this.value)">
+              <option value="votes">Most Votes</option>
+              <option value="new">Newest</option>
+              <option value="trending">Trending Score</option>
+              <option value="comments">Most Discussed</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="setView('grid', this)" title="Grid View">
+          <i class="fas fa-th"></i>
+        </button>
+        <button class="view-btn" onclick="setView('list', this)" title="List View">
+          <i class="fas fa-list"></i>
+        </button>
+        <span class="campaign-count" id="campaignCount">Loading...</span>
+      </div>
+
+      <!-- Campaigns Grid -->
+      <div class="campaigns-grid" id="campaignsGrid"></div>
+
+      <!-- Load More -->
+      <div class="load-more-container">
+        <button class="btn-secondary" id="loadMoreBtn" onclick="loadMoreCampaigns()">
+          <i class="fas fa-chevron-down"></i> Load More Campaigns
+        </button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ LEADERBOARD SECTION ═══════════════════════════════════ -->
+    <section id="leaderboardSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-trophy"></i> Leaderboard</h1>
+        <div style="display:flex;gap:8px;align-items:center">
+          <p class="page-sub">The strongest ideas — ranked by real votes</p>
+          <button class="btn-ghost" onclick="exportLeaderboard()" style="white-space:nowrap;font-size:0.8rem">
+            <i class="fas fa-copy"></i> Copy Top 10
+          </button>
+        </div>
+      </div>
+
+      <!-- Top 3 Podium -->
+      <div class="podium-container" id="podiumContainer"></div>
+
+      <!-- Full Leaderboard Table -->
+      <div class="leaderboard-table-container">
+        <div class="table-header">
+          <h3>Full Rankings</h3>
+          <div class="table-filters">
+            <button class="filter-tab active" onclick="filterLeaderboard('all', this)">All Time</button>
+            <button class="filter-tab" onclick="filterLeaderboard('week', this)">This Week</button>
+            <button class="filter-tab" onclick="filterLeaderboard('today', this)">Today</button>
+          </div>
+        </div>
+        <div class="leaderboard-table" id="leaderboardTable"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ ANALYTICS SECTION ═══════════════════════════════════ -->
+    <section id="analyticsSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+        <p class="page-sub">Real-time insights across all campaigns</p>
+      </div>
+
+      <!-- Analytics Cards -->
+      <div class="analytics-grid">
+        <div class="analytics-card">
+          <div class="ac-icon" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">
+            <i class="fas fa-eye"></i>
+          </div>
+          <div class="ac-data">
+            <div class="ac-number" id="totalViews">0</div>
+            <div class="ac-label">Total Campaign Views</div>
+            <div class="ac-change positive">+24.3% this week</div>
+          </div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">
+            <i class="fas fa-vote-yea"></i>
+          </div>
+          <div class="ac-data">
+            <div class="ac-number" id="totalVotesAnalytics">0</div>
+            <div class="ac-label">Total Votes Cast</div>
+            <div class="ac-change positive">+18.7% this week</div>
+          </div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-icon" style="background:linear-gradient(135deg,#10b981,#06b6d4)">
+            <i class="fas fa-share-alt"></i>
+          </div>
+          <div class="ac-data">
+            <div class="ac-number" id="totalShares">0</div>
+            <div class="ac-label">Total Shares</div>
+            <div class="ac-change positive">+31.2% this week</div>
+          </div>
+        </div>
+        <div class="analytics-card">
+          <div class="ac-icon" style="background:linear-gradient(135deg,#f43f5e,#ec4899)">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="ac-data">
+            <div class="ac-number" id="activeUsers">0</div>
+            <div class="ac-label">Active Creators</div>
+            <div class="ac-change positive">+12.1% this week</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Vote Activity (Last 7 Days)</h3>
+          <div class="chart-container">
+            <canvas id="voteChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Campaign Types Distribution</h3>
+          <div class="chart-container">
+            <canvas id="typeChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-card">
+          <h3>Platform Performance Radar</h3>
+          <div class="chart-container">
+            <canvas id="analyticsRadar"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engagement Heatmap -->
+      <div class="chart-card full-width">
+        <h3>Engagement by Hour (24h)</h3>
+        <div class="heatmap-container" id="heatmapContainer"></div>
+      </div>
+
+      <!-- Top Categories -->
+      <div class="chart-card full-width">
+        <h3>Category Performance</h3>
+        <div class="category-bars" id="categoryBars"></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ CREATE SECTION ═══════════════════════════════════ -->
+    <section id="createSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-rocket"></i> Create Your Campaign</h1>
+        <p class="page-sub">Build something the internet can't ignore</p>
+      </div>
+
+      <div class="create-layout">
+        <!-- Create Form -->
+        <div class="create-form-container">
+          <!-- Progress -->
+          <div class="form-progress">
+            <div class="progress-step active" data-step="1">
+              <div class="ps-circle">1</div>
+              <div class="ps-label">Details</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="2">
+              <div class="ps-circle">2</div>
+              <div class="ps-label">Content</div>
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step" data-step="3">
+              <div class="ps-circle">3</div>
+              <div class="ps-label">Review</div>
+            </div>
+          </div>
+
+          <!-- Step 1: Basic Details -->
+          <div class="form-step active" id="formStep1">
+            <div class="form-card">
+              <h3 class="form-card-title">🎯 Campaign Basics</h3>
+
+              <div class="form-group">
+                <label>Campaign Title <span class="required">*</span></label>
+                <input type="text" id="campTitle" class="form-input" placeholder="Make it unforgettable..." maxlength="100" oninput="updatePreview(); document.getElementById('titleCount').textContent=this.value.length"/>
+                <div class="char-counter"><span id="titleCount">0</span>/100</div>
+              </div>
+
+              <div class="form-group">
+                <label>Campaign Type <span class="required">*</span></label>
+                <div class="type-selector" id="typeSelector">
+                  <div class="type-option" onclick="selectType('viral-hook', this)">
+                    <span class="to-icon">🪝</span>
+                    <span class="to-label">Viral Hook</span>
+                  </div>
+                  <div class="type-option" onclick="selectType('meme-ad', this)">
+                    <span class="to-icon">😂</span>
+                    <span class="to-label">Meme Ad</span>
+                  </div>
+                  <div class="type-option" onclick="selectType('video-concept', this)">
+                    <span class="to-icon">🎬</span>
+                    <span class="to-label">Video Concept</span>
+                  </div>
+                  <div class="type-option" onclick="selectType('campaign-concept', this)">
+                    <span class="to-icon">🚀</span>
+                    <span class="to-label">Bold Campaign</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Target Industry</label>
+                <select class="form-input" id="campIndustry" onchange="updatePreview()">
+                  <option value="">Select industry...</option>
+                  <option value="tech">Technology</option>
+                  <option value="fashion">Fashion & Beauty</option>
+                  <option value="food">Food & Beverage</option>
+                  <option value="health">Health & Wellness</option>
+                  <option value="finance">Finance</option>
+                  <option value="education">Education</option>
+                  <option value="entertainment">Entertainment</option>
+                  <option value="startup">Startup / SaaS</option>
+                  <option value="social">Social Cause</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Tags (up to 5)</label>
+                <div class="tag-input-container">
+                  <input type="text" id="tagInput" class="form-input" placeholder="Add a tag and press Enter..." onkeydown="addTag(event)"/>
+                </div>
+                <div class="tags-display" id="tagsDisplay"></div>
+              </div>
+
+              <button class="btn-primary btn-full" onclick="nextStep(2)">
+                Next: Add Content <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Content -->
+          <div class="form-step" id="formStep2">
+            <div class="form-card">
+              <h3 class="form-card-title">✍️ Campaign Content</h3>
+
+              <div class="form-group">
+                <label>The Hook / Main Idea <span class="required">*</span></label>
+                <textarea id="campHook" class="form-textarea" rows="4" placeholder="Your viral hook — the one sentence that stops everything..." maxlength="280" oninput="updatePreview(); updateHookCount()"></textarea>
+                <div class="char-counter"><span id="hookCount">0</span>/280 · <span class="twitter-hint">Twitter-ready!</span></div>
+                <!-- AI Hook Analyzer -->
+                <div class="ai-analyzer-bar">
+                  <button type="button" class="btn-analyze" onclick="analyzeHook()" id="analyzeBtn">
+                    <i class="fas fa-brain"></i> Analyze Hook Strength (AI)
+                  </button>
+                  <div class="hook-score-display" id="hookScoreDisplay" style="display:none">
+                    <div class="hook-score-ring" id="hookScoreRing">
+                      <span id="hookScoreNum">—</span>
+                    </div>
+                    <div class="hook-score-text" id="hookScoreText"></div>
+                  </div>
+                </div>
+                <div class="ai-feedback-box" id="aiFeedbackBox" style="display:none"></div>
+              </div>
+
+              <div class="form-group">
+                <label>Full Campaign Description <span class="required">*</span></label>
+                <div class="rich-toolbar">
+                  <button type="button" class="toolbar-btn" onclick="formatText('bold')" title="Bold"><i class="fas fa-bold"></i></button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('italic')" title="Italic"><i class="fas fa-italic"></i></button>
+                  <button type="button" class="toolbar-btn" onclick="formatText('emoji')" title="Add Emoji">😊</button>
+                  <button type="button" class="toolbar-btn" onclick="aiSuggest()" title="AI Enhance">
+                    <i class="fas fa-magic"></i> AI Boost
+                  </button>
+                </div>
+                <textarea id="campDesc" class="form-textarea" rows="8" placeholder="Describe your full campaign concept. The more vivid, the better..." maxlength="2000" oninput="updatePreview(); updateDescCount()"></textarea>
+                <div class="char-counter"><span id="descCount">0</span>/2000</div>
+              </div>
+
+              <div class="form-group">
+                <label>Target Audience</label>
+                <input type="text" id="campAudience" class="form-input" placeholder="e.g., Gen Z aged 18–25 who love streetwear" oninput="updatePreview()"/>
+              </div>
+
+              <div class="form-group">
+                <label>Platform Strategy</label>
+                <div class="platform-selector" id="platformSelector">
+                  <div class="platform-opt" onclick="togglePlatform(this, 'instagram')">
+                    <i class="fab fa-instagram"></i> Instagram
+                  </div>
+                  <div class="platform-opt" onclick="togglePlatform(this, 'tiktok')">
+                    <i class="fab fa-tiktok"></i> TikTok
+                  </div>
+                  <div class="platform-opt" onclick="togglePlatform(this, 'twitter')">
+                    <i class="fab fa-twitter"></i> Twitter/X
+                  </div>
+                  <div class="platform-opt" onclick="togglePlatform(this, 'youtube')">
+                    <i class="fab fa-youtube"></i> YouTube
+                  </div>
+                  <div class="platform-opt" onclick="togglePlatform(this, 'linkedin')">
+                    <i class="fab fa-linkedin"></i> LinkedIn
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Campaign Color Theme</label>
+                <div class="color-picker-row">
+                  <div class="color-swatch active" style="background:#6366f1" onclick="selectColor('#6366f1', this)"></div>
+                  <div class="color-swatch" style="background:#f59e0b" onclick="selectColor('#f59e0b', this)"></div>
+                  <div class="color-swatch" style="background:#ef4444" onclick="selectColor('#ef4444', this)"></div>
+                  <div class="color-swatch" style="background:#10b981" onclick="selectColor('#10b981', this)"></div>
+                  <div class="color-swatch" style="background:#06b6d4" onclick="selectColor('#06b6d4', this)"></div>
+                  <div class="color-swatch" style="background:#ec4899" onclick="selectColor('#ec4899', this)"></div>
+                  <input type="color" class="color-custom" id="customColor" onchange="selectColor(this.value, null)" title="Custom color"/>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Upload Visual (optional)</label>
+                <div class="upload-zone" id="uploadZone" ondrop="handleDrop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+                  <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)" hidden/>
+                  <div class="upload-content" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📁</div>
+                    <p>Drag & drop an image or click to upload</p>
+                    <span>PNG, JPG, GIF up to 10MB</span>
+                  </div>
+                  <div class="upload-preview" id="uploadPreview"></div>
+                </div>
+              </div>
+
+              <div class="btn-row">
+                <button class="btn-ghost" onclick="nextStep(1)">
+                  <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn-primary" onclick="nextStep(3)">
+                  Preview Campaign <i class="fas fa-eye"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Review -->
+          <div class="form-step" id="formStep3">
+            <div class="form-card">
+              <h3 class="form-card-title">✅ Review & Launch</h3>
+              <div class="review-preview" id="reviewPreview"></div>
+
+              <!-- Viral Score Prediction -->
+              <div class="viral-score-container">
+                <h4>🔮 Viral Score Prediction</h4>
+                <div class="viral-score-bar">
+                  <div class="vs-fill" id="viralScoreFill"></div>
+                </div>
+                <div class="vs-details" id="vsDetails"></div>
+              </div>
+
+              <!-- AI Tips -->
+              <div class="ai-tips" id="aiTips">
+                <h4><i class="fas fa-lightbulb"></i> AI Improvement Tips</h4>
+                <ul id="tipsList"></ul>
+              </div>
+
+              <!-- Terms -->
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="termsCheck"/>
+                  <span>I agree to the <a href="#" class="link">contest terms</a> and confirm this is my original work</span>
+                </label>
+              </div>
+
+              <div class="btn-row">
+                <button class="btn-ghost" onclick="nextStep(2)">
+                  <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn-primary glow-btn btn-xl" onclick="submitCampaign()" id="submitBtn">
+                  <i class="fas fa-rocket"></i> Launch Campaign!
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Preview -->
+        <div class="preview-panel" id="previewPanel">
+          <div class="preview-header">
+            <h3>📱 Live Preview</h3>
+            <div class="preview-device-toggle">
+              <button class="pdt-btn active" onclick="setPreviewDevice('mobile', this)">📱</button>
+              <button class="pdt-btn" onclick="setPreviewDevice('desktop', this)">🖥️</button>
+            </div>
+          </div>
+          <div class="preview-device mobile" id="previewDevice">
+            <div class="preview-card" id="livePreview">
+              <div class="preview-placeholder">
+                <p>Start filling in the form to see your campaign preview here...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ PROFILE SECTION ═══════════════════════════════════ -->
+    <section id="profileSection" class="section">
+      <div id="profileContent"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════ MY CAMPAIGNS SECTION ═══════════════════════════════════ -->
+    <section id="myCampaignsSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-layer-group"></i> My Campaigns</h1>
+      </div>
+      <div id="myCampaignsGrid" class="campaigns-grid"></div>
+    </section>
+
+    <!-- ═══════════════════════════════════ BATTLE SECTION ═══════════════════════════════════ -->
+    <section id="battleSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-bolt"></i> Campaign Battle</h1>
+        <p class="page-sub">Head-to-head — which campaign deserves the most attention?</p>
+      </div>
+      <div class="battle-wrap">
+        <div class="battle-arena" id="battleArena"></div>
+        <div class="battle-controls">
+          <button class="btn-ghost" onclick="loadNewBattle()">
+            <i class="fas fa-random"></i> New Battle
+          </button>
+          <div class="battle-progress-wrap">
+            <div class="battle-bar-label" id="battleBarLabelA"></div>
+            <div class="battle-progress-bar">
+              <div class="battle-bar-a" id="battleBarA"></div>
+              <div class="battle-bar-b" id="battleBarB"></div>
+            </div>
+            <div class="battle-bar-label" id="battleBarLabelB"></div>
+          </div>
+        </div>
+        <div class="battle-history" id="battleHistory">
+          <h3 style="margin-bottom:16px;font-weight:700">Recent Battles</h3>
+          <div id="battleHistoryList"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ SCROLL STOPPER SIMULATOR ═══════════════════════════════════ -->
+    <section id="simulatorSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-mobile-alt"></i> Scroll Stopper Simulator</h1>
+        <p class="page-sub">See if your campaign makes people stop scrolling in a real feed</p>
+      </div>
+      <div class="simulator-wrap">
+        <div class="simulator-left">
+          <div class="sim-phone">
+            <div class="sim-phone-notch"></div>
+            <div class="sim-feed" id="simFeed">
+              <div class="sim-loading">
+                <i class="fas fa-mobile-alt" style="font-size:2rem;color:var(--text3)"></i>
+                <p style="color:var(--text3);margin-top:12px">Pick a campaign and hit Launch</p>
+              </div>
+            </div>
+            <div class="sim-phone-home"></div>
+          </div>
+        </div>
+        <div class="simulator-right">
+          <h3 style="font-weight:700;margin-bottom:16px">Choose a Campaign to Test</h3>
+          <div class="sim-campaign-picker" id="simPicker"></div>
+          <button class="btn-primary" id="simLaunchBtn" onclick="launchSimulator()" style="width:100%;margin-top:16px" disabled>
+            <i class="fas fa-play"></i> Launch Simulation
+          </button>
+          <div class="sim-stats" id="simStats" style="display:none">
+            <div class="sim-stat-card">
+              <div class="sim-stat-num" id="simStopRate">—</div>
+              <div class="sim-stat-label">Stop Rate</div>
+            </div>
+            <div class="sim-stat-card">
+              <div class="sim-stat-num" id="simEngagement">—</div>
+              <div class="sim-stat-label">Engagement</div>
+            </div>
+            <div class="sim-stat-card">
+              <div class="sim-stat-num" id="simReach">—</div>
+              <div class="sim-stat-label">Reach Score</div>
+            </div>
+          </div>
+          <div class="sim-verdict" id="simVerdict" style="display:none"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ AI INSIGHTS ═══════════════════════════════════ -->
+    <section id="insightsSection" class="section">
+      <div class="page-header">
+        <h1 class="page-title"><i class="fas fa-brain"></i> AI Insights</h1>
+        <p class="page-sub">Deep AI analysis — DNA breakdown, viral prediction & why it works</p>
+      </div>
+      <div class="insights-wrap">
+        <!-- Campaign Picker -->
+        <div class="insights-picker-wrap">
+          <h3 style="font-weight:700;margin-bottom:12px">Select a Campaign to Analyze</h3>
+          <div class="insights-picker" id="insightsPicker"></div>
+        </div>
+        <div class="insights-grid" id="insightsGrid" style="display:none">
+          <!-- DNA Radar -->
+          <div class="insight-card dna-card">
+            <h3 class="insight-title"><i class="fas fa-dna"></i> Campaign DNA</h3>
+            <div class="radar-wrap">
+              <canvas id="radarCanvas" width="300" height="300"></canvas>
+            </div>
+            <div class="dna-labels" id="dnaLabels"></div>
+          </div>
+          <!-- Viral Timeline -->
+          <div class="insight-card timeline-card">
+            <h3 class="insight-title"><i class="fas fa-chart-line"></i> Viral Prediction Timeline</h3>
+            <canvas id="timelineCanvas" width="400" height="220"></canvas>
+            <div class="timeline-legend" id="timelineLegend"></div>
+          </div>
+          <!-- Why It Works (AI) -->
+          <div class="insight-card why-card">
+            <h3 class="insight-title"><i class="fas fa-lightbulb"></i> Why It Works (AI Analysis)</h3>
+            <div class="why-content" id="whyContent">
+              <div class="why-loading" id="whyLoading">
+                <i class="fas fa-brain fa-pulse" style="font-size:2rem;color:var(--primary)"></i>
+                <p style="margin-top:12px;color:var(--text2)">Claude is analyzing your campaign...</p>
+              </div>
+            </div>
+          </div>
+          <!-- India Heatmap -->
+          <div class="insight-card heatmap-card">
+            <h3 class="insight-title"><i class="fas fa-map-marked-alt"></i> Attention Heatmap — India</h3>
+            <div class="india-map-wrap">
+              <svg id="indiaMapSvg" viewBox="0 0 500 580" xmlns="http://www.w3.org/2000/svg"></svg>
+            </div>
+            <div class="heatmap-cities" id="heatmapCities"></div>
+          </div>
+        </div>
+      </div>
+      <!-- CTA outside the padded wrap so it centers on full width -->
+      <div class="insights-cta" id="insightsCta">
+        <div style="font-size:3rem;margin-bottom:16px">🧠</div>
+        <h3>Pick a campaign above to unlock full AI analysis</h3>
+        <p>DNA breakdown · viral prediction · why it works · attention heatmap</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════ ACTIVITY FEED TICKER ═══════════════════════════════════ -->
+    <div class="activity-ticker" id="activityTicker">
+      <div class="ticker-label"><i class="fas fa-circle" style="color:#10b981;font-size:0.5rem"></i> LIVE</div>
+      <div class="ticker-track" id="tickerTrack"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════ FOOTER ═══════════════════════════════════ -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span class="brand-icon">⚡</span>
+          <span class="brand-name">ViralForge</span>
+          <p>Make the internet stop.</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>Platform</h4>
+            <a onclick="showSection('home')">Home</a>
+            <a onclick="showSection('campaigns')">Campaigns</a>
+            <a onclick="showSection('leaderboard')">Leaderboard</a>
+            <a onclick="showSection('create')">Create</a>
+          </div>
+          <div class="footer-col">
+            <h4>Legal</h4>
+            <a href="#">Terms of Service</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Contest Rules</a>
+          </div>
+          <div class="footer-col">
+            <h4>Connect</h4>
+            <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+            <a href="#"><i class="fab fa-instagram"></i> Instagram</a>
+            <a href="#"><i class="fab fa-linkedin"></i> LinkedIn</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2025 ViralForge. A public scoreboard for digital marketing ideas.</p>
+        <p style="margin-top:8px;font-size:0.78rem;color:var(--text3)">Built by <strong style="color:var(--primary)">Apoorva Karoshi</strong></p>
+      </div>
+    </footer>
+
+  </div><!-- /app -->
+
+  <!-- ═══ MODALS — outside #app so position:fixed works correctly ═══ -->
+
+  <!-- AUTH MODAL -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal auth-modal">
+      <button class="modal-close" onclick="closeModal('authModal')"><i class="fas fa-times"></i></button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="switchAuth('login', this)">Login</button>
+        <button class="auth-tab" onclick="switchAuth('signup', this)">Sign Up</button>
+      </div>
+      <div class="auth-form active" id="loginForm">
+        <div class="auth-header">
+          <div class="auth-icon">⚡</div>
+          <h2>Welcome Back</h2>
+          <p>Login to continue creating</p>
+        </div>
+        <div class="form-group">
+          <label>Username / Email</label>
+          <input type="text" id="loginUser" class="form-input" placeholder="Enter username or email"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="pass-input-wrap">
+            <input type="password" id="loginPass" class="form-input" placeholder="Enter password" onkeydown="if(event.key==='Enter') login()"/>
+            <button class="pass-toggle" onclick="togglePass('loginPass')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <button class="btn-primary btn-full" onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+        <div class="auth-social">
+          <p>Or continue with</p>
+          <div class="social-btns">
+            <button class="social-btn google" onclick="socialLogin('Google')"><i class="fab fa-google"></i> Google</button>
+            <button class="social-btn github" onclick="socialLogin('GitHub')"><i class="fab fa-github"></i> GitHub</button>
+          </div>
+        </div>
+        <div class="demo-hint"><p>🎯 Demo: <strong>demo / demo123</strong></p></div>
+      </div>
+      <div class="auth-form" id="signupForm">
+        <div class="auth-header">
+          <div class="auth-icon">🚀</div>
+          <h2>Join ViralForge</h2>
+          <p>Create your account and start creating</p>
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="signupName" class="form-input" placeholder="Your full name"/>
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="signupUser" class="form-input" placeholder="Choose a username" oninput="checkUsername(this.value)"/>
+          <div class="username-check" id="usernameCheck"></div>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="signupEmail" class="form-input" placeholder="your@email.com"/>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <div class="pass-input-wrap">
+            <input type="password" id="signupPass" class="form-input" placeholder="Min 8 characters" oninput="checkPassword(this.value)"/>
+            <button class="pass-toggle" onclick="togglePass('signupPass')"><i class="fas fa-eye"></i></button>
+          </div>
+          <div class="password-strength">
+            <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+            <span class="strength-label" id="strengthLabel"></span>
+          </div>
+        </div>
+        <button class="btn-primary btn-full" onclick="signup()"><i class="fas fa-rocket"></i> Create Account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CAMPAIGN DETAIL MODAL -->
+  <div class="modal-overlay" id="campaignModal">
+    <div class="modal campaign-modal">
+      <button class="modal-close" onclick="closeModal('campaignModal')"><i class="fas fa-times"></i></button>
+      <div id="campaignModalContent"></div>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div class="modal-overlay" id="shareModal">
+    <div class="modal share-modal">
+      <button class="modal-close" onclick="closeModal('shareModal')"><i class="fas fa-times"></i></button>
+      <div class="share-content">
+        <h2>🚀 Share This Campaign</h2>
+        <p>Get more votes by sharing everywhere!</p>
+        <div class="share-link-box">
+          <input type="text" id="shareLink" class="form-input" readonly/>
+          <button class="btn-primary" onclick="copyShareLink()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="share-platforms">
+          <button class="share-platform twitter" onclick="shareOn('twitter')"><i class="fab fa-twitter"></i> Twitter/X</button>
+          <button class="share-platform instagram" onclick="shareOn('instagram')"><i class="fab fa-instagram"></i> Instagram</button>
+          <button class="share-platform linkedin" onclick="shareOn('linkedin')"><i class="fab fa-linkedin"></i> LinkedIn</button>
+          <button class="share-platform whatsapp" onclick="shareOn('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button class="share-platform reddit" onclick="shareOn('reddit')"><i class="fab fa-reddit"></i> Reddit</button>
+        </div>
+        <div class="share-card-section">
+          <h4><i class="fas fa-link"></i> Your Trackable Link</h4>
+          <p style="font-size:0.82rem;color:var(--text3);margin-bottom:10px">Share this unique link — tracks every click you bring in.</p>
+          <div style="display:flex;gap:8px;align-items:center">
+            <div id="trackableLinkDisplay" style="flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:0.76rem;font-family:monospace;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">viralforge.io/c/...</div>
+            <button class="btn-primary" onclick="copyTrackableLink(State.shareTarget?.id)" style="white-space:nowrap;padding:8px 14px;font-size:0.82rem;flex-shrink:0">
+              <i class="fas fa-copy"></i> Copy
+            </button>
+          </div>
+        </div>
+        <div class="share-card-section">
+          <h4><i class="fas fa-image"></i> Download Share Card</h4>
+          <p style="font-size:0.82rem;color:var(--text3);margin-bottom:12px">Auto-generates a visual card ready for Instagram, WhatsApp, or any platform.</p>
+          <canvas id="shareCardCanvas" style="display:none"></canvas>
+          <div id="shareCardPreview" style="margin-bottom:12px"></div>
+          <button class="btn-primary btn-full" onclick="generateShareCard()" id="shareCardBtn">
+            <i class="fas fa-magic"></i> Generate & Download Card
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING TOUR — outside #app -->
+  <div id="onboardingOverlay" class="onboarding-overlay" style="display:none">
+    <div class="onboarding-modal">
+      <button class="onboarding-skip" onclick="closeOnboarding()">Skip <i class="fas fa-times"></i></button>
+      <div class="onboarding-steps" id="onboardingSteps">
+        <div class="ob-step active" data-step="0">
+          <div class="ob-icon">⚡</div>
+          <div class="ob-tag">Welcome to ViralForge</div>
+          <h2 class="ob-title">The Public Scoreboard for Marketing Ideas</h2>
+          <p class="ob-desc">This is not a contest of words. It's a contest of attention.<br/>Create an idea. Put it out there. See if the world cares.</p>
+        </div>
+        <div class="ob-step" data-step="1">
+          <div class="ob-icon">💡</div>
+          <div class="ob-tag">Step 01 — Create</div>
+          <h2 class="ob-title">Come Up With One Bold Idea</h2>
+          <p class="ob-desc">A viral hook. A meme ad. A video concept. A campaign that makes people stop mid-scroll and actually feel something.</p>
+          <div class="ob-demo"><div class="ob-demo-card"><span style="font-size:2rem">🪝</span><div><div style="font-weight:800;font-size:0.9rem">Your Campaign Title</div><div style="font-size:0.75rem;color:var(--text3);margin-top:3px">"The hook that stops everything..."</div></div></div></div>
+        </div>
+        <div class="ob-step" data-step="2">
+          <div class="ob-icon">📤</div>
+          <div class="ob-tag">Step 02 — Post</div>
+          <h2 class="ob-title">Make It Live for the World</h2>
+          <p class="ob-desc">Post your idea on the scoreboard. Use our <strong>AI Hook Analyzer</strong> to sharpen it before you launch.</p>
+          <div class="ob-feature-pills"><span class="ob-pill">🧠 AI Hook Score</span><span class="ob-pill">📊 DNA Radar Chart</span><span class="ob-pill">🎯 Viral Prediction</span></div>
+        </div>
+        <div class="ob-step" data-step="3">
+          <div class="ob-icon">🚀</div>
+          <div class="ob-tag">Step 03 — Share</div>
+          <h2 class="ob-title">Put It in Front of Real People</h2>
+          <p class="ob-desc">Use our <strong>Share Card Generator</strong> to blast it across Instagram, WhatsApp, Twitter, and LinkedIn.</p>
+          <div class="ob-feature-pills"><span class="ob-pill">🖼️ Auto Share Card</span><span class="ob-pill">📱 Scroll Simulator</span><span class="ob-pill">🔗 One-Click Share</span></div>
+        </div>
+        <div class="ob-step" data-step="4">
+          <div class="ob-icon">🔥</div>
+          <div class="ob-tag">Step 04 & 05 — Vote & Rise</div>
+          <h2 class="ob-title">Votes Decide Everything</h2>
+          <p class="ob-desc">If it connects — people stop, react, and vote. The strongest ideas rise to the top. No ads. No tricks. Just creative power.</p>
+          <div class="ob-feature-pills"><span class="ob-pill">⚔️ Battle Mode</span><span class="ob-pill">⚡ Viral Velocity</span><span class="ob-pill">🏆 Live Leaderboard</span></div>
+          <button class="btn-primary ob-cta" onclick="closeOnboarding(); showSection('create')"><i class="fas fa-rocket"></i> Start Creating Now</button>
+        </div>
+      </div>
+      <div class="ob-dots" id="obDots">
+        <div class="ob-dot active" onclick="goToObStep(0)"></div>
+        <div class="ob-dot" onclick="goToObStep(1)"></div>
+        <div class="ob-dot" onclick="goToObStep(2)"></div>
+        <div class="ob-dot" onclick="goToObStep(3)"></div>
+        <div class="ob-dot" onclick="goToObStep(4)"></div>
+      </div>
+      <div class="ob-nav">
+        <button class="ob-btn-prev" id="obPrev" onclick="obNav(-1)" style="visibility:hidden"><i class="fas fa-arrow-left"></i> Back</button>
+        <div class="ob-step-label" id="obStepLabel">1 of 5</div>
+        <button class="ob-btn-next" id="obNext" onclick="obNav(1)">Next <i class="fas fa-arrow-right"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="particles.js"></script>
+  <script src="animations.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
