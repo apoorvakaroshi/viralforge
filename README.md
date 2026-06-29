@@ -72,8 +72,8 @@ cd viralforge
 
 ## 👩‍💻 Author
 
-**Apoorva R Karoshi**  
-B.E. Computer Science & Engineering — VSMSRKIT, Nipani (VTU Belagavi)  
+Developed by **Apoorva R Karoshi**  
+ 
 GitHub: [@apoorvakaroshi](https://github.com/apoorvakaroshi)
 
 ---
